@@ -1,22 +1,38 @@
-import mongoose from "mongoose";
+import { connect,Schema,model,Types} from "mongoose";
 
-mongoose.connect("MongoDB URL");
+connect("MongoDB URL");
 
-const userSchema = new mongoose.Schema({
+const userSchema = new Schema({
     username: {
         type: String,
         unique: true
     },
     password: String
-})
+});
 
-export const User = mongoose.model("User", userSchema);
+export const User = model("User", userSchema);
 
-const ContentSchema = new mongoose.Schema({
-    title : String,
-    link : String,
-    tags : [{type : mongoose.Schema.Types.ObjectId, ref : "Tag"}],
-    userId : {type : mongoose.Schema.Types.ObjectId, ref : "User",required : true}
-})  
+const contentTypes = ['image', 'video', 'article', 'audio']; // Extend as needed
 
-export const Content = mongoose.model("Content", ContentSchema);
+const contentSchema = new Schema({
+  link: { type: String, required: true },
+  type: { type: String, enum: contentTypes, required: true },
+  title: { type: String, required: true },
+  tags: [{ type: Types.ObjectId, ref: 'Tag' }],
+  userId: { type: Types.ObjectId, ref: 'User', required: true },
+});
+
+export const Content = model("Content", contentSchema);
+
+const tagSchema = new Schema({
+    title: { type: String, required: true, unique: true }
+});
+
+export const Tag = model("Tag",tagSchema);
+
+const linkSchema = new Schema({
+    hash: { type: String, required: true },
+    userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+  });
+
+export const Link = model("Link",linkSchema);
