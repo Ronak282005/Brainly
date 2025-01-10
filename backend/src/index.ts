@@ -90,14 +90,31 @@ app.put("/api/v1/content", async (req, res) => {
 app.post("/api/v1/brain/share",userAuthMiddleware, async (req, res) => {
     const share = req.body.share
     if(share){
+        const existingUser = await Link.findOne({
+            // @ts-ignore
+            userId : req.userId
+        })
+        if(existingUser){
+            res.json({
+                hash : existingUser.hash
+            })
+        }
+        const hash = random(10)
         await Link.create({
+            // @ts-ignore
             userId : req.userId,
-            hash : random(10)
+            hash : hash
+        })
+        res.json({
+            msg : "/share/" + hash
         })
     } else{
+        // @ts-ignore
         await Link.deleteOne({userId : req.userId})
+        res.json({
+            msg : "updated sharable link"
+        })
     }
-
 })
 
 app.post("/api/v1/brain/:shareLink", async (req, res) => {
@@ -113,7 +130,19 @@ app.post("/api/v1/brain/:shareLink", async (req, res) => {
     const content = await Content.find({
         userId : link?.userId
     })
-
+    
     const user = User.findOne({
+        userId : link.userId
+    })
+    
+    if(!user){
+        res.status(411).json({
+            msg : "sorry user not found this error should ideally not happen"
+        })
+        return
+    }
+    res.json({
+        username : user.username,
+        content : content
     })
 })
