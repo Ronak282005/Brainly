@@ -132,7 +132,7 @@ app.post("/api/v1/brain/:shareLink", async (req, res) => {
     })
     
     const user = User.findOne({
-        userId : link.userId
+        _id : link.userId
     })
     
     if(!user){
