@@ -1,8 +1,9 @@
 import express from "express";
 import  jwt  from "jsonwebtoken";
-import { Content, User } from "./db";
+import { Content, Link, User } from "./db";
 import { JWT_SECRET } from "./config";
 import { userAuthMiddleware } from "./middleware";
+import { random } from "./utils";
 
 const app = express()
 app.use(express.json())
@@ -86,10 +87,33 @@ app.put("/api/v1/content", async (req, res) => {
         msg : "Content updated successfully"
     })
 })
-app.post("/api/v1/brain/share", async (req, res) => {
+app.post("/api/v1/brain/share",userAuthMiddleware, async (req, res) => {
+    const share = req.body.share
+    if(share){
+        await Link.create({
+            userId : req.userId,
+            hash : random(10)
+        })
+    } else{
+        await Link.deleteOne({userId : req.userId})
+    }
 
 })
 
 app.post("/api/v1/brain/:shareLink", async (req, res) => {
+    const hash = req.params.shareLink
+    const link = await Link.findOne({hash})
+    if(!link){
+        res.status(411).json({
+            msg : "sorry incorrect link"
+        })
+        return
+    }
+    //userId
+    const content = await Content.find({
+        userId : link?.userId
+    })
 
+    const user = User.findOne({
+    })
 })
